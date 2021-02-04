@@ -6,7 +6,7 @@ It supports original Lua syntax too!
 
 ## Installation Love2D
 
-Simply download `olua.lua` from `api` folder. Once you've done that, add it to your project's `main.lua` file:
+Simply download `olua.lua`. Once you've done that, place it in your project and then add this snippet of code to your project's `main.lua` file:
 ```Lua
 main = require "olua.lua"
 ```
