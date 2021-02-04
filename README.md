@@ -13,7 +13,7 @@ main = require "olua.lua"
 
 ## Syntax Installation to SublimeText
 
-1. Download `Objective Lua.sublime-syntax` and place it in your SublimeText `Packages` folder.
+1. Download `Objective Lua.sublime-syntax` and locate your SublimeText `Packages` folder.
 
 You can find the folder by going to the `Preferences > Browse Packages...` tab.
 
