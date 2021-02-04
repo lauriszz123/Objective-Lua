@@ -1,0 +1,54 @@
+--[[
+	File: EntitySystem.olua
+	Made by: Laurynas.
+	Date: 2021/02/04
+]]
+
+-- Entity class system
+
+require "List"
+
+local classname = "EntitySystem"
+
+class EntitySystem
+
+	-- Constructor
+	function EntitySystem()
+		self.entities = new List() -- create a new list for the entities.
+	end
+
+	-- Add a fresh entity!
+	function add( entity )
+		if entity instanceof Entity then -- Check if the argument class
+										 -- Is the same as the Entity class
+			local id = self.entities:add( entity )
+			entity:setID( id )
+		else
+			print( classname, "::add() Entity expected as a parameted!" )
+		end
+	end
+
+
+	-- Just removing the any entities and updating their id's.
+	function remove( id )
+		local entity = self.entities:remove( id )
+		entity:destroy()
+		for i, entity in self.entities:iter2() do
+			entity:setID( i )
+		end
+	end
+
+	-- update all entities
+	function update( dt )
+		for entity in self.entities:iter() do
+			entity:update( dt )
+		end
+	end
+
+	-- draw all entities.
+	function draw()
+		for entity in self.entities:iter() do
+			entity:draw()
+		end
+	end
+end

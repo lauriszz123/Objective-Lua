@@ -1,0 +1,37 @@
+--[[
+	File: Entity.olua
+	Made by: Laurynas.
+	Date: 2021/02/04
+]]
+
+-- The main class
+class Entity
+
+	-- Entity class constructor
+	-- Takes in simple arguments
+	-- Just enough to move a player.
+	function Entity( x, y, width, height )
+		self.x = x
+		self.y = y
+		self.width = width or 32
+		self.height = height or 32
+		self.id = -1
+	end
+
+	-- A setter
+	function setID( id )
+		self.id = id
+	end
+
+	-- Draws a simple rectangle
+	function draw()
+		love.graphics.rectangle( "fill", self.x, self.y, self.width, self.height )
+	end
+
+	-- Not used, just a shell function.
+	-- Any other classes that inherit Entity clas
+	-- Can ovveride this function.
+	function destroy()
+
+	end
+end

@@ -1,0 +1,37 @@
+--[[
+	File: Player.olua
+	Made by: Laurynas.
+	Date: 2021/02/04
+]]
+
+require "Entity"
+
+
+-- Creating a Player class that inherits Entity class
+class Player inherits Entity
+	function Player( x, y )
+		-- This is how you call the constructor
+		-- for the parent class!
+		self( x or 15, y or 15 )
+	end
+
+	-- Just a simple update function that handles simple
+	-- "horrible" player controls.
+	function update()
+		if love.keyboard.isDown( "s" ) then
+			self.y = self.y + 5
+		end
+
+		if love.keyboard.isDown( "w" ) then
+			self.y = self.y - 5
+		end
+
+		if love.keyboard.isDown( "a" ) then
+			self.x = self.x - 5
+		end
+
+		if love.keyboard.isDown( "d" ) then
+			self.x = self.x + 5
+		end
+	end
+end
