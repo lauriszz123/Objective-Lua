@@ -1,0 +1,49 @@
+--[[
+	File: List.olua
+	Made by: Laurynas.
+	Date: 2021/02/04
+]]
+
+-- A simple class for simple List's.
+class List
+
+	-- Constructor
+	function List( list )
+		self.list = list or {}
+	end
+
+	-- Add any value to the list
+	function add( value )
+		table.insert( self.list, value )
+		return #self.list
+	end
+
+	-- Remove it from the list
+	function remove( i )
+		return table.remove( self.list, i )
+	end
+
+	--[[ Advanced iter function
+		This is made so that when iteriating with:
+
+		for object in self.list:iter() do
+			...
+		end
+
+		only the object is returned and nothing else,
+		unlike ipairs function or pairs.
+	]]
+	function iter()
+		local i = 0
+		local n = table.getn( self.list )
+		return function ()
+			i = i + 1
+			if i <= n then return self.list[ i ] end
+		end
+	end
+
+	-- same as ipairs function
+	function iter2()
+		return ipairs( self.list )
+	end
+end

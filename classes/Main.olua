@@ -1,0 +1,25 @@
+--[[
+	File: Main.olua
+	Made by: Laurynas.
+	Date: 2021/02/04
+]]
+
+require "Entities.Player"
+require "EntitySystem"
+
+class Main
+	function Main()
+		self.x = 1
+		self.y = 1
+		self.es = new EntitySystem()
+		self.es:add( new Player() )
+	end
+
+	function update( dt )
+		self.es:update()
+	end
+
+	function draw()
+		self.es:draw()
+	end
+end
