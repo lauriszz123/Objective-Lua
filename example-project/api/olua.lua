@@ -14,7 +14,7 @@ local function split(inputstr, sep)
 end
 
 function class(base, init)
-	local c = {__version="Objective-Lua v2.0"}
+	local c = {__version="Objective Lua v2.1"}
 	if not init and type(base) == 'function' then
 		init = base
 		base = nil
@@ -122,7 +122,7 @@ local function tokenizer( prog )
 						str = str .. prog.next()
 						long = long + 1
 					else
-						error( "not found string" )
+						error( "<"..toks.filename().."> long string start not found.", 0 )
 					end
 				end
 			end
@@ -135,6 +135,8 @@ local function tokenizer( prog )
 							for i=1, long do
 								if prog.next() == "=" then
 									str = str .. "="
+								else
+									error( "<"..toks.filename().."> long string end not found.", 0 )
 								end
 							end
 							long = 0
@@ -168,7 +170,7 @@ local function tokenizer( prog )
 								prog.next()
 								long = long + 1
 							else
-								error( "not found string" )
+								error( "<"..toks.filename().."> long comment start not found.", 0 )
 							end
 						end
 					end
@@ -181,7 +183,7 @@ local function tokenizer( prog )
 										if prog.peek() == "=" then
 											prog.next()
 										else
-											error( "long string fail" )
+											error( "<"..toks.filename().."> long comment end not found.", 0 )
 										end
 									end
 									long = 0
@@ -348,7 +350,32 @@ local function parse( toks )
 			end )
 			str = str .. classstr
 		else
-			str = str .. toks.next() .. " "
+			local v = toks.next()
+			str = str .. v .. " "
+			if toks.peek() == "+=" then
+				toks.next()
+				str = str.. "="..v .. "+".." "
+			elseif toks.peek() == "-" then
+				local s = toks.next()
+				if toks.peek() == "=" then
+					toks.next()
+					str = str .. "="..v..s.." "
+				else
+					str = str..s
+				end
+			elseif toks.peek() == "*=" then
+				toks.next()
+				str = str .."=" .. v .. "*".." "
+			elseif toks.peek() == "/=" then
+				toks.next()
+				str = str .. "=" .. v .. "/".." "
+			elseif toks.peek() == "^=" then
+				toks.next()
+				str = str .."=" .. v .. "^".." "
+			elseif toks.peek() == "%=" then
+				toks.next()
+				str = str .. "=" .. v .. "%".." "
+			end
 		end
 	end
 
@@ -382,7 +409,7 @@ function require( ... )
 	if love.filesystem.getInfo( str ) ~= nil then
 		if requires[ str ] == nil then
 			local file = love.filesystem.newFile( str )
-			local func = parse( tokenizer( input( file:read(), str ) ) )
+			local func = parse( tokenizer( input( file:read().."\n", str ) ) )
 			local ok, err = pcall( func )
 			if not ok then error( err ) end
 			requires[ str ] = true
