@@ -25,6 +25,21 @@ class lexical
 				var = var + step
 			end
 		end
+
+		out('alo\n123"')
+		out("alo\n123\"")
+		out('\97lo\10\04923"')
+		out([[alo
+		     123"]])
+		out([==[
+		     alo
+		     123"]==])
+		out(3.0)
+		out(3.1416)
+		out(314.16e-2)
+		out(0.31416E1)
+		out(0xff)
+		out(0x56)
 	end
 end
 

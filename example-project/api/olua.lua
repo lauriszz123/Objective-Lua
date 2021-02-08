@@ -14,7 +14,7 @@ local function split(inputstr, sep)
 end
 
 function class(base, init)
-	local c = {__version="Objective Lua v2.2"}
+	local c = {__version="Objective Lua v2.3"}
 	if not init and type(base) == 'function' then
 		init = base
 		base = nil
@@ -290,6 +290,30 @@ local function parse( toks )
 					ec = ec - 1
 				end
 				str = str .. p .. " "
+				if toks.peek() == "+=" then
+					toks.next()
+					str = str.. "="..p .. "+".." "
+				elseif toks.peek() == "-" then
+					local s = toks.next()
+					if toks.peek() == "=" then
+						toks.next()
+						str = str .. "="..p..s.." "
+					else
+						str = str..s
+					end
+				elseif toks.peek() == "*=" then
+					toks.next()
+					str = str .."=" .. p .. "*".." "
+				elseif toks.peek() == "/=" then
+					toks.next()
+					str = str .. "=" .. p .. "/".." "
+				elseif toks.peek() == "^=" then
+					toks.next()
+					str = str .."=" .. p .. "^".." "
+				elseif toks.peek() == "%=" then
+					toks.next()
+					str = str .. "=" .. p .. "%".." "
+				end
 			end
 		end
 		return str

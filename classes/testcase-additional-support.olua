@@ -26,3 +26,38 @@ out( i )
 i %= 2
 
 out( i )
+
+class testcase_additional_math
+	function testcase_additional_math()
+		local i = 1
+
+		out( i )
+
+		i += 1
+
+		out( i )
+
+		i -= 1
+
+		out( i )
+
+		i += 1
+		i *= 2
+
+		out( i )
+
+		i /= 2
+
+		out( i )
+
+		i ^= 2
+
+		out( i )
+
+		i %= 2
+
+		out( i )
+	end
+end
+
+new testcase_additional_math()
