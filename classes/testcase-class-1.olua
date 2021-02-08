@@ -1,0 +1,11 @@
+class testcase_1
+	function testcase_1()end
+end
+
+class testcase_2
+	function testcase_2(dt)out(dt)end
+end
+
+new testcase_1()
+new testcase_2("test")
+new testcase_2( "test2" )

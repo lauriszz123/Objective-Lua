@@ -1,0 +1,33 @@
+-- Error - update does not exist. dt needs to be surrounded by spaces, apparently.
+function test1(dt)
+end
+
+-- Freezes
+function test2()end
+
+-- Believes the -- is a comment.
+-- Also if 'end' is exactly at the beginning of the line, it freezes.
+out("--")
+
+class test_pgimeno_1
+	function test_pgimeno_1()
+		-- Believes the -- is a comment.
+		-- Also if 'end' is exactly at the beginning of the line, it freezes.
+		out("--")
+	end
+	-- Error - update does not exist. dt needs to be surrounded by spaces, apparently.
+	function test1(dt)
+		out(dt)
+		out( dt )
+	end
+	-- Freezes
+	function test2()end
+end
+
+test1()
+test2()
+
+local t = new test_pgimeno_1()
+t:test1("test")
+t:test1( "test2" )
+t:test2()

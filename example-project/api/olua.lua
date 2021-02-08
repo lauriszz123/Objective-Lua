@@ -4,10 +4,8 @@
 	Date: 2021/01/29
 ]]
 
-local function split (inputstr, sep)
-	if sep == nil then
-		sep = "%s"
-	end
+local function split(inputstr, sep)
+	if sep == nil then sep = "%s" end
 	local t={}
 	for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
 		table.insert(t, str)
@@ -16,7 +14,7 @@ local function split (inputstr, sep)
 end
 
 function class(base, init)
-	local c = {__version="ObjectiveLua v1.0"}
+	local c = {__version="Objective-Lua v2.0"}
 	if not init and type(base) == 'function' then
 		init = base
 		base = nil
@@ -54,174 +52,323 @@ function class(base, init)
 	return c
 end
 
-local function findchar( str, chr )
-	for i=1, #str do
-		if str:sub( i, i ) == chr then
-			return true
-		end
-	end
+local function input( prog, f )
+	local i = 1
+	return {
+		next = function()
+			local v = prog:sub( i, i )
+			i = i + 1
+			return v
+		end;
+		peek = function()
+			return prog:sub( i, i )
+		end;
+		eof = function()
+			return i > #prog
+		end;
+		filename = function()
+			return f
+		end;
+	}
 end
 
-local function parseBlock( block )
-	local str = ""
-	local i = 1
-	while #block > 0 do
-		local curr = table.remove( block, i )
-		if curr == "class" then
-			local classstr = ""
-			local classname = table.remove( block, i )
-			local inherits
-			if block[ i ] == "inherits" then
-				table.remove( block, i )
-				inherits = table.remove( block, i )
-			end
-			local ends = 0
-			local currblock = {}
-			while true do
-				local curr = table.remove( block, i )
-				if curr == "end" then
-					if ends == 0 then
-						 break
-					elseif ends < 0 then
-						error( "Missing 'end' keyword in a class: '"..classname.."'!" )
+local function tokenizer( prog )
+	local function white( s )
+		return s:match( "[\t\n\r ]" ) ~= nil
+	end
+	local function idstart( s )
+		return s:match( "[a-zA-Z_]" ) ~= nil
+	end
+	local function id( s )
+		return s:match( "[a-zA-Z_0-9%.:]" ) ~= nil
+	end
+	local function num( s )
+		return s:match( "[0-9]" )
+	end
+	local function op( s )
+		return s:match( "[<=>%+%-%%^/%*]" )
+	end
+	local function dowhile( func )
+		local str = ""
+		while prog.eof() == false and func( prog.peek() ) do
+			str = str .. prog.next()
+		end
+		return str
+	end
+	local function strf( e )
+		local str = ""
+		str = str .. prog.next()
+		str = str .. dowhile( function( p )
+			return p ~= e
+		end )
+		str = str .. prog.next()
+		return str
+	end
+	local function _n()
+		dowhile( white )
+		local p = prog.peek()
+		if idstart( p ) then return dowhile( id ) end
+		if num( p ) then return dowhile( num ) end
+		if p == "[" then
+			local str = ""
+			local long = 0
+			str = str .. prog.next()
+			if prog.peek() == "=" then
+				--str = str .. "="
+				while prog.eof() == false do
+					if prog.peek() == "[" then
+						break
+					elseif prog.peek() == "=" then
+						str = str .. prog.next()
+						long = long + 1
+					else
+						error( "not found string" )
 					end
-					ends = ends - 1
 				end
-				currblock[ #currblock + 1 ] = curr
-				if curr == "function" then ends = ends + 1 end
-				if curr == "while" then ends = ends + 1 end
-				if curr == "if" then ends = ends + 1 end
-				if curr == "for" then ends = ends + 1 end
 			end
-			
-			local functions = {}
-			ends = 0
-			
-			while #currblock > 0 do
-				local curr = table.remove( currblock, 1 )
-				if curr == "function" then
-					local rawname = table.remove( currblock, 1 )
-					local name = ""
-					rawname:gsub( "%w+", function( r ) name = r end )
-					local b = {}
-					
-					local arg = ""
-					if findchar( rawname, ')' ) == nil then
-						while #currblock > 0 do
-							local curr = table.remove( currblock, 1 )
-							if findchar( curr, ')' ) == true then
-								arg = arg .. curr
+			if prog.peek() == "[" then
+				str = str .. prog.next()
+				while prog.eof() == false do
+					if prog.peek() == "]" then
+						str = str .. prog.next()
+						if prog.peek() == "=" then
+							for i=1, long do
+								if prog.next() == "=" then
+									str = str .. "="
+								end
+							end
+							long = 0
+						end
+						if prog.peek() == "]" then
+							str = str .. prog.next()
+							if long == 0 then
 								break
 							end
-							arg = arg .. curr
 						end
 					end
-					
-					if #arg > 1 then
-						b.arguments = arg
-					end
-					
-					while #currblock > 0 do
-						local curr = table.remove( currblock, 1 )
-						if curr == "end" then
-							if ends == 0 then
-								 break
-							elseif ends < 0 then
-								error( "Missing 'end' keyword in a function: '"..rawname.."'!" )
-							end
-							ends = ends - 1
-						end
-						if curr == "function" then ends = ends + 1 end
-						if curr == "while" then ends = ends + 1 end
-						if curr == "if" then ends = ends + 1 end
-						if curr == "for" then ends = ends + 1 end
-						b[ #b + 1 ] = curr
-					end
-					
-					functions[ name ] = b
+					str = str .. prog.next()
 				end
 			end
-		
-			local func = ""
-		
-			if functions[ classname ] then
-				local b = functions[ classname ]
-				if b[ "arguments" ] ~= nil then
-					if inherits then
-						classstr = classstr .. classname.."=class(" .. inherits .. ",function( self,"..b[ "arguments" ].." "
+			return str
+		end
+		if p == "'" or p == '"' then return strf( p ) end
+		if p == "-" then
+			local last = prog.next()
+			p = prog.peek()
+			local long = 0
+			if p == "-" then
+				prog.next()
+				if prog.peek() == "[" then
+					prog.next()
+					if prog.peek() == "=" then
+						while prog.eof() == false do
+							if prog.peek() == "[" then
+								break
+							elseif prog.peek() == "=" then
+								prog.next()
+								long = long + 1
+							else
+								error( "not found string" )
+							end
+						end
+					end
+					if prog.peek() == "[" then
+						while prog.eof() == false do
+							local p = prog.next()
+							if p == "]" then
+								if prog.peek() == "=" then
+									for i=1, long do
+										if prog.peek() == "=" then
+											prog.next()
+										else
+											error( "long string fail" )
+										end
+									end
+									long = 0
+								end
+								if prog.peek() == "]" then
+									prog.next()
+									if long == 0 then
+										break
+									end
+								end
+							end
+						end
 					else
-						classstr = classstr .. classname.."=class(function( self,"..b[ "arguments" ].." "
+						while prog.eof() == false do
+							local p = prog.next()
+							if p:match( "[\n\r]" ) ~= nil then
+								break
+							end
+						end
 					end
-					for _, v in ipairs( b ) do
-						classstr = classstr .. v .. " "
-					end
-					classstr = classstr .. "end) "
+					return ""
 				else
-					if inherits then
-						classstr = classstr .. classname.."=class(" .. inherits .. ",function( self ) "
+					while prog.eof() == false do
+						local p = prog.next()
+						if p:match( "[\n\r]" ) ~= nil then
+							break
+						end
+					end
+					return ""
+				end
+			end
+			return last
+		end
+		if op( p ) then return dowhile( op ) end
+		return prog.next()
+	end
+	local curr
+	return {
+		next = function()
+			local c = curr or _n()
+			curr = nil
+			return c
+		end;
+		peek = function()
+			if curr then
+				return curr
+			else
+				curr = _n()
+				return curr
+			end
+		end;
+		eof = prog.eof;
+		filename = prog.filename;
+	}
+end
+
+local function parse( toks )
+
+	local function parseWhileEnd()
+		local str = ""
+		local ec = 0
+		while toks.eof() == false do
+			local p = toks.next()
+			if p == "if" then
+				str = str .. p .. " "
+				ec = ec + 1
+			elseif p == "for" then
+				str = str .. p .. " "
+				ec = ec + 1
+			elseif p == "function" then
+				str = str .. p .. " "
+				ec = ec + 1
+			elseif p == "end" and ec == 0 then
+				break
+			else
+				if p == "end" then
+					ec = ec - 1
+				end
+				str = str .. p .. " "
+			end
+		end
+		return str
+	end
+	local function parseWhileArgs()
+		local str = ""
+		toks.next()
+		while toks.eof() == false do
+			local p = toks.next()
+			if p == ")" then
+				break
+			end
+			str = str .. p .. " "
+		end
+		return str
+	end
+
+	local str = ""
+	while toks.eof() == false do
+		local p = toks.peek()
+		if p == "class" then
+			toks.next()
+			local classstr = ""
+			local classname = toks.next()
+			local inherits
+			if toks.peek() == "inherits" then
+				toks.next()
+				inherits = toks.next()
+				if inherits == "function" then
+					error( "<"..toks.filename().."> inheritance expected, got keyword 'function'.", 0 )
+				end
+			end
+			local functions = {}
+			while toks.eof() == false do
+				local p = toks.next()
+				if p == "function" then
+					local fname = toks.next()
+					local args = parseWhileArgs()
+					local body = parseWhileEnd()
+					functions[ fname ] = {args, body}
+				else
+					if #p > 0 then
+						if p == "end" then
+							break
+						else
+							error( "<"..toks.filename().."> Expected 'end' for class: "..classname, 0 )
+						end
+					end
+				end
+			end
+			if functions[ classname ] then
+				if inherits then
+					if #functions[ classname ][ 1 ] == 0 then
+						classstr = classstr .. classname .. "=class("..inherits..",function(self) "..functions[ classname ][ 2 ].."end) "
 					else
-						classstr = classstr .. classname.."=class(function( self ) "	
+						classstr = classstr .. classname .. "=class("..inherits..",function(self,"..functions[ classname ][ 1 ]..") "..functions[ classname ][ 2 ].."end) "
 					end
-					for _, v in ipairs( b ) do
-						classstr = classstr .. v .. " "
+				else
+					if #functions[ classname ][ 1 ] == 0 then
+						classstr = classstr .. classname .. "=class(function(self) "..functions[ classname ][ 2 ].."end) "
+					else
+						classstr = classstr .. classname .. "=class(function(self,"..functions[ classname ][ 1 ]..") "..functions[ classname ][ 2 ].."end) "
 					end
-					classstr = classstr .. "end) "
 				end
 				functions[ classname ] = nil
+			else
+				error( "<"..toks.filename().."> expected class constructor in class: "..classname, 0 )
 			end
-		
-			for fname, body in pairs( functions ) do
-				if body.arguments then
-					classstr = classstr .. "function " .. classname..":"..fname.."("..body.arguments.." "
-				else
-					classstr = classstr .. "function " .. classname..":"..fname.."() "
-				end
-				for _=1, #body do
-					classstr = classstr .. body[ _ ] .. " "
-				end
-				classstr = classstr .. "end "
+			for k, v in pairs( functions ) do
+				classstr = classstr .. "function "..classname..":"..k.."("..v[1]..") "..v[2].."end "
 			end
-
 			classstr = classstr:gsub( "self%s-%(%s-%)", function( s )
 				if inherits then
 					return inherits..".init(self) "
 				else
-					error( "class does not inherit." )
+					error( "<"..toks.filename().."> Class '"..classname.."' does not inherit other class, self(...) not required!", 0 )
 				end
 			end )
-
 			classstr = classstr:gsub( "self%s-%(", function( s )
 				if inherits then
 					return inherits..".init(self,"
 				else
-					error( "Class '"..classname.."' does not inherit other class, self(...) not required!" )
+					error( "<"..toks.filename().."> Class '"..classname.."' does not inherit other class, self(...) not required!", 0 )
 				end
 			end )
-
 			str = str .. classstr
 		else
-			str = str .. curr .. " "
+			str = str .. toks.next() .. " "
 		end
 	end
-	str = str:gsub( "new %w+%(", function( s )
+
+	str = str:gsub( "(new ([a-zA-Z_0-9]+) %()", function( s )
 		s = s:gsub( "new", "" )
 		return s
 	end )
-	str = str:gsub( "%w+ instanceof %w+", function( s )
+	str = str:gsub( "(([a-zA-Z_0-9]+) instanceof ([a-zA-Z_0-9]+))", function( s )
 		local spl = split( s, " " )
 		return spl[ 1 ]..":instanceof("..spl[3]..")"
 	end )
-	return str
-end
 
-local parse = function( program, name )
-	program = program:gsub( "(%-%-%[%[(.-)%]%])", "" )
-	program = program:gsub( "(%-%-(.-)(\n))", "" )
-	--print( program )
-	program = split( program, " \t\n\r" )
-	local parsed = parseBlock( program )
-	local func, err = loadstring( parsed, name )
-	if not func then error( err ) end
+	--print(  )
+	--print( toks.filename() )
+	--print(  )
+	--print( str )
+	--print(  )
+	
+	local func, err = loadstring( str, toks.filename() )
+	if not func then error( err, 0 ) end
 	setfenv( func, _G )
 	return func
 end
@@ -235,7 +382,7 @@ function require( ... )
 	if love.filesystem.getInfo( str ) ~= nil then
 		if requires[ str ] == nil then
 			local file = love.filesystem.newFile( str )
-			local func = parse( file:read(), str )
+			local func = parse( tokenizer( input( file:read(), str ) ) )
 			local ok, err = pcall( func )
 			if not ok then error( err ) end
 			requires[ str ] = true

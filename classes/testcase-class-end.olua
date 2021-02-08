@@ -1,0 +1,4 @@
+-- shell class
+-- expected error
+class Test
+end

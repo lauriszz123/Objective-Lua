@@ -1,0 +1,31 @@
+out[[test
+string
+big
+]]
+
+class testcase_big_string
+	function testcase_big_string()
+		out[[test
+		string
+		big
+		]]
+	end
+end
+
+new testcase_big_string()
+
+out[[test
+		string
+		big
+		]
+		kull
+		[ok]
+		]]
+
+out[===[test
+		string
+		big
+		]
+		kull
+		[ok]
+		]===]

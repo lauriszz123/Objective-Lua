@@ -15,7 +15,7 @@ class Main
 		self.es:add( new Player() )
 	end
 
-	function update( dt )
+	function update(dt)
 		self.es:update()
 	end
 

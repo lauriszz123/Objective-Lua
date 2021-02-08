@@ -1,0 +1,14 @@
+-- thinks 'end' is a keyword
+out("The end is near")
+
+-- removes multiple spaces in string
+out("The    TITLE    is this")
+
+class test_pgimeno_3
+	function test_pgimeno_3()
+		-- thinks 'end' is a keyword
+		out("The end is near")
+	end
+end
+
+new test_pgimeno_3()

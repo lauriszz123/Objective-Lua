@@ -1,0 +1,39 @@
+-- Fails to see the string
+out[====[
+the end is near
+]====]
+
+-- Fails to notice that --[[ is part of the string
+out[==[
+--[[
+if only...
+]]
+]==]
+
+-- Fails to see the comment, freezes
+--[=[
+if only...
+]=]
+
+class test_pgimeno_2
+	function test_pgimeno_2()
+		-- Fails to see the string
+		out[==[
+		the end is near
+		]==]
+
+		-- Fails to notice that --[[ is part of the string
+		out[===[
+		--[[
+		if only...
+		]]
+		]===]
+
+		-- Fails to see the comment, freezes
+		--[=[
+		if only... we did the end here
+		]=]
+	end
+end
+
+new test_pgimeno_2()

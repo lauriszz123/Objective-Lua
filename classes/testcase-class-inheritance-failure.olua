@@ -1,0 +1,5 @@
+class testace_inheritance_failure inherits
+	function testace_inheritance_failure()
+		self()
+	end
+end

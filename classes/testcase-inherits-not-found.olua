@@ -1,0 +1,5 @@
+class testcase_inheritance
+	function testcase_inheritance()
+		self(arg)
+	end
+end
