@@ -14,7 +14,7 @@ local function split(inputstr, sep)
 end
 
 function class(base, init)
-	local c = {__version="Objective-Lua v1.0"}
+	local c = {__version="Objective-Lua v2.0"}
 	if not init and type(base) == 'function' then
 		init = base
 		base = nil
