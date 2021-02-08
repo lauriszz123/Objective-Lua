@@ -153,6 +153,8 @@ i %= value
 
 ## Release History
 
+* 2.3
+    * Bug Fixes.
 * 2.2
     * Bug Fixes.
 * 2.1
