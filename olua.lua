@@ -14,7 +14,7 @@ local function split(inputstr, sep)
 end
 
 function class(base, init)
-	local c = {__version="Objective-Lua v2.0"}
+	local c = {__version="Objective-Lua v1.0"}
 	if not init and type(base) == 'function' then
 		init = base
 		base = nil
@@ -350,7 +350,32 @@ local function parse( toks )
 			end )
 			str = str .. classstr
 		else
-			str = str .. toks.next() .. " "
+			local v = toks.next()
+			str = str .. v .. " "
+			if toks.peek() == "+=" then
+				toks.next()
+				str = str.. "="..v .. "+".." "
+			elseif toks.peek() == "-" then
+				local s = toks.next()
+				if toks.peek() == "=" then
+					toks.next()
+					str = str .. "="..v..s.." "
+				else
+					str = str..s
+				end
+			elseif toks.peek() == "*=" then
+				toks.next()
+				str = str .."=" .. v .. "*".." "
+			elseif toks.peek() == "/=" then
+				toks.next()
+				str = str .. "=" .. v .. "/".." "
+			elseif toks.peek() == "^=" then
+				toks.next()
+				str = str .."=" .. v .. "^".." "
+			elseif toks.peek() == "%=" then
+				toks.next()
+				str = str .. "=" .. v .. "%".." "
+			end
 		end
 	end
 
@@ -384,7 +409,7 @@ function require( ... )
 	if love.filesystem.getInfo( str ) ~= nil then
 		if requires[ str ] == nil then
 			local file = love.filesystem.newFile( str )
-			local func = parse( tokenizer( input( file:read(), str ) ) )
+			local func = parse( tokenizer( input( file:read().."\n", str ) ) )
 			local ok, err = pcall( func )
 			if not ok then error( err ) end
 			requires[ str ] = true

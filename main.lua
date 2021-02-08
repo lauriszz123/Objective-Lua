@@ -103,4 +103,9 @@ big
 		[ok]
 		]===] ) )
 
+print( createTestCase( "testcase-additional-support", false, function()
+	require "testcase-additional-support"
+end, 1, 2, 1, 4, 2, 4, 0 ) )
+
+
 love.event.quit()
