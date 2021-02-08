@@ -153,6 +153,8 @@ i %= value
 
 ## Release History
 
+* 2.2
+    * Bug Fixes.
 * 2.1
     * Additional support in Objective Lua for math operations.
 * 2.0
