@@ -144,6 +144,8 @@ So this is a quick tutorial of classes, new operator and how they work! For more
 
 * 2.0
     * Parser overhaul.
+    * Test case support.
+    * Added test cases.
 * 1.0
     * The first proper and stable release.
 * 0.1
