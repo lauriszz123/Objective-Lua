@@ -142,6 +142,8 @@ So this is a quick tutorial of classes, new operator and how they work! For more
 
 ## Release History
 
+* 2.0
+    * Parser overhaul.
 * 1.0
     * The first proper and stable release.
 * 0.1
