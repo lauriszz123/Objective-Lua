@@ -1,0 +1,11 @@
+out[=[]=]
+
+out[=[[[]]]=]
+
+class testcase_grump2
+	function testcase_grump2(...)
+		out[=[[[]]]=]
+	end
+end
+
+new testcase_grump2()

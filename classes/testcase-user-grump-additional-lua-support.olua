@@ -1,0 +1,29 @@
+out( 1 ~= 1 )
+out( "\"" )
+out( '\'' )
+out( 0x12 )
+out( 0x1p2 )
+out( tostring( 1i ) )
+out( 1e3 )
+out( 1.4 )
+out( "1 " .. "  2" )
+
+class testcase_grump
+	function testcase_grump()
+		out( 1 ~= 1 )
+		out( "\"" )
+		out( '\'' )
+		out( 0x12 )
+		out( 0x1p2 )
+		out( tostring( 1i ) )
+		out( 1e3 )
+		out( 1.4 )
+		out( "1 " .. "  2" )
+	end
+
+	function foo(...)
+		return ...
+	end
+end
+
+new testcase_grump()

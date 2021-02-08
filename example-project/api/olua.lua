@@ -14,7 +14,7 @@ local function split(inputstr, sep)
 end
 
 function class(base, init)
-	local c = {__version="Objective Lua v2.1"}
+	local c = {__version="Objective Lua v2.2"}
 	if not init and type(base) == 'function' then
 		init = base
 		base = nil
@@ -83,10 +83,16 @@ local function tokenizer( prog )
 		return s:match( "[a-zA-Z_0-9%.:]" ) ~= nil
 	end
 	local function num( s )
-		return s:match( "[0-9]" )
+		return s:match( "[0-9xXp%.i%-a-fA-F]" ) ~= nil
+	end
+	local function nums( s )
+		return s:match( "[0-9]" ) ~= nil
 	end
 	local function op( s )
-		return s:match( "[<=>%+%-%%^/%*]" )
+		return s:match( "[<=>%+%-%%^/%*~]" ) ~= nil
+	end
+	local function dots( s )
+		return s:match( "[%.]" ) ~= nil
 	end
 	local function dowhile( func )
 		local str = ""
@@ -98,8 +104,17 @@ local function tokenizer( prog )
 	local function strf( e )
 		local str = ""
 		str = str .. prog.next()
+		local isback = 0
 		str = str .. dowhile( function( p )
-			return p ~= e
+			isback = isback - 1
+			if p == "\\" then
+				isback = 2
+				return true
+			end
+			if p == e and isback <= 0 then
+				return false
+			end
+			return true
 		end )
 		str = str .. prog.next()
 		return str
@@ -108,7 +123,7 @@ local function tokenizer( prog )
 		dowhile( white )
 		local p = prog.peek()
 		if idstart( p ) then return dowhile( id ) end
-		if num( p ) then return dowhile( num ) end
+		if nums( p ) then return dowhile( num ) end
 		if p == "[" then
 			local str = ""
 			local long = 0
@@ -147,8 +162,9 @@ local function tokenizer( prog )
 								break
 							end
 						end
+					else
+						str = str .. prog.next()
 					end
-					str = str .. prog.next()
 				end
 			end
 			return str
@@ -218,6 +234,7 @@ local function tokenizer( prog )
 			return last
 		end
 		if op( p ) then return dowhile( op ) end
+		if dots( p ) then return dowhile( dots ) end
 		return prog.next()
 	end
 	local curr
@@ -245,17 +262,27 @@ local function parse( toks )
 	local function parseWhileEnd()
 		local str = ""
 		local ec = 0
+		local curr = 0
 		while toks.eof() == false do
 			local p = toks.next()
 			if p == "if" then
 				str = str .. p .. " "
 				ec = ec + 1
+				curr = curr + 1
 			elseif p == "for" then
 				str = str .. p .. " "
 				ec = ec + 1
+				curr = curr + 1
 			elseif p == "function" then
 				str = str .. p .. " "
 				ec = ec + 1
+				curr = curr + 1
+			elseif p == "do" then
+				str = str .. p .. " "
+				if curr <= 0 then
+					ec = ec + 1
+				end
+				curr = curr - 1
 			elseif p == "end" and ec == 0 then
 				break
 			else
@@ -388,11 +415,11 @@ local function parse( toks )
 		return spl[ 1 ]..":instanceof("..spl[3]..")"
 	end )
 
-	--print(  )
-	--print( toks.filename() )
-	--print(  )
-	--print( str )
-	--print(  )
+--	print(  )
+--	print( toks.filename() )
+--	print(  )
+--	print( str )
+--	print(  )
 	
 	local func, err = loadstring( str, toks.filename() )
 	if not func then error( err, 0 ) end

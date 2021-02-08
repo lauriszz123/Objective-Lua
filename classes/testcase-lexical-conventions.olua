@@ -1,0 +1,31 @@
+out('alo\n123"')
+out("alo\n123\"")
+out('\97lo\10\04923"')
+out([[alo
+     123"]])
+out([==[
+     alo
+     123"]==])
+out(3.0)
+out(3.1416)
+out(314.16e-2)
+out(0.31416E1)
+out(0xff)
+out(0x56)
+
+local e1, e2, e3 = 1, 1, 1
+
+class lexical
+	function lexical()
+		do
+			local var, limit, step = tonumber(e1), tonumber(e2), tonumber(e3)
+			if not (var and limit and step) then error("err") end
+			while (step > 0 and var <= limit) or (step <= 0 and var >= limit) do
+				local v = var
+				var = var + step
+			end
+		end
+	end
+end
+
+new lexical()

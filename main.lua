@@ -30,7 +30,7 @@ local function createTestCase( name, capture, func, ... )
 	if failed == false then
 		for i=1, #ins do
 			if ins[ i ] ~= outs[ i ] then
-				status = "("..name..") FAILED: Inputs do not match Outputs."
+				status = "("..name..") FAILED("..i.."): Inputs do not match Outputs."
 				break
 			end
 		end
@@ -107,5 +107,19 @@ print( createTestCase( "testcase-additional-support", false, function()
 	require "testcase-additional-support"
 end, 1, 2, 1, 4, 2, 4, 0 ) )
 
+print( createTestCase( "testcase-user-grump-additional-lua-support", false, function()
+	require "testcase-user-grump-additional-lua-support"
+end, false, "\"", '\'', 0x12, 0x1p2, "0+1i", 1e3, 1.4, "1   2", false, "\"", '\'', 0x12, 0x1p2, "0+1i", 1e3, 1.4, "1   2" ) )
+
+print( createTestCase( "testcase-user-grump-long-string-bug", false, function()
+	require "testcase-user-grump-long-string-bug"
+end, [=[]=], [=[[[]]]=], [=[[[]]]=] ) )
+
+print( createTestCase( "testcase-lexical-conventions", false, function()
+	require "testcase-lexical-conventions"
+end, 'alo\n123"', "alo\n123\"", '\97lo\10\04923"', [[alo
+     123"]], [==[
+     alo
+     123"]==], 3.0, 3.1416, 314.16e-2, 0.31416E1, 0xff, 0x56 ) )
 
 love.event.quit()
