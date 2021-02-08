@@ -1,0 +1,28 @@
+local i = 1
+
+out( i )
+
+i += 1
+
+out( i )
+
+i -= 1
+
+out( i )
+
+i += 1
+i *= 2
+
+out( i )
+
+i /= 2
+
+out( i )
+
+i ^= 2
+
+out( i )
+
+i %= 2
+
+out( i )
