@@ -154,7 +154,7 @@ i %= value
 ## Release History
 
 * 2.3
-    * Bug Fixes.
+    * Bug Fixes with math operations in classes.
 * 2.2
     * Bug Fixes.
 * 2.1
