@@ -152,7 +152,12 @@ i %= expression
 ```
 As well as:
 ```Lua
+a, b, c += expression, expression, expression
+a, b, c -= expression, expression, expression
 a, b, c *= expression, expression, expression
+a, b, c /= expression, expression, expression
+a, b, c ^= expression, expression, expression
+a, b, c %= expression, expression, expression
 ```
 
 ## Release History
