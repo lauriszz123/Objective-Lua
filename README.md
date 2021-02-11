@@ -141,7 +141,7 @@ Yeah, not funny.... but you get the point! `instanceof` will test if `<instance>
 So this is a quick tutorial of classes, new operator and how they work! For more info check out the repository and feel free to study how it works! Almost everything described here is used in the example program.
 
 Objective Lua also supports:
-```
+```Lua
 local i = 0
 i += value
 i -= value
@@ -149,6 +149,10 @@ i *= value
 i /= value
 i ^= value
 i %= value
+```
+As well as:
+```Lua
+a, b, c *= 2, 3, 4
 ```
 
 ## Release History
