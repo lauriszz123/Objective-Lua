@@ -153,6 +153,8 @@ i %= value
 
 ## Release History
 
+* 2.4
+    * Added precedence support for self-evaluated expressions/variables.
 * 2.3
     * Bug Fixes with math operations in classes.
 * 2.2
