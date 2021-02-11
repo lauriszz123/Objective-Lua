@@ -143,16 +143,16 @@ So this is a quick tutorial of classes, new operator and how they work! For more
 Objective Lua also supports:
 ```Lua
 local i = 0
-i += value
-i -= value
-i *= value
-i /= value
-i ^= value
-i %= value
+i += expression
+i -= expression
+i *= expression
+i /= expression
+i ^= expression
+i %= expression
 ```
 As well as:
 ```Lua
-a, b, c *= 2, 3, 4
+a, b, c *= expression, expression, expression
 ```
 
 ## Release History
