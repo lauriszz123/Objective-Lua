@@ -258,6 +258,77 @@ local function tokenizer( prog )
 end
 
 local function parse( toks )
+	local function parseTable()
+		local str = ""
+		local c = 0
+		while toks.eof() == false do
+			local p = toks.next()
+			if p == "{" then c = c + 1 end
+			if p == "}" and c <= 0 then
+				str = str .. p .. " "
+				break
+			elseif p == "}" then
+				c = c - 1
+			end
+			str = str .. p .. " "
+		end
+		return str
+	end
+	local function parseWhileTableArgs()
+		local str = ""
+		local c = 0
+		toks.next()
+		while toks.eof() == false do
+			local p = toks.next()
+			if p == "[" then c = c + 1 end
+			if p == "]" and c <= 0 then
+				break
+			elseif p == "]" then
+				c = c - 1
+			end
+			str = str .. p .. " "
+		end
+		return str
+	end
+	local function parseExpr()
+		local expr = ""
+		while toks.eof() == false do
+			local a1 = toks.next()
+			if a1 == "(" then
+				a1 = a1 .. parseExpr()
+				if toks.next() ~= ")" then
+					error( "<"..toks.filename().."> expression parse fail, expected ')'.", 0 )
+				else
+					a1 = a1 .. ") "
+				end
+			end
+			if a1 == "{" then
+				a1 = a1 .. parseTable()
+			end
+			if toks.peek() == "." or toks.peek() == ":" then
+				a1 = a1 .. toks.next()
+				a1 = a1 .. toks.next() .. " "
+			end
+			if toks.peek() == "[" then
+				while toks.eof() == false do
+					a1 = a1 .."["..parseWhileTableArgs().."]"
+					if toks.peek() ~= "[" then
+						break
+					end
+				end
+			end
+			if toks.peek() == "(" then
+				a1 = a1 .. "("..parseWhileArgs()..") "
+			end
+			if toks.peek():match( "[%+%-%*^%%=~<>]" ) ~= nil then
+				expr = expr .. a1.." "..toks.next().." "
+			else
+				expr = expr .. a1 .. " "
+				break
+			end
+		end
+		return expr
+	end
 
 	local function parseWhileEnd()
 		local str = ""
@@ -289,42 +360,110 @@ local function parse( toks )
 				if p == "end" then
 					ec = ec - 1
 				end
-				str = str .. p .. " "
+				local v = {p}
+				while toks.eof() == false do
+					if toks.peek() == "," then
+						toks.next()
+						str = str .. v[ #v ] .. ","
+					else
+						str = str .. v[ #v ] .. " "
+						break
+					end
+					v[ #v + 1 ] = toks.next()
+				end
 				if toks.peek() == "+=" then
 					toks.next()
-					str = str.. "="..p .. "+".." "
+					str = str .. "="
+					for i=1, #v do
+						str = str.. v[ i ] .. "+(" .. parseExpr() .. ") "
+						if toks.peek() == "," then
+							toks.next()
+							str = str .. ", "
+						else
+							break
+						end
+					end
 				elseif toks.peek() == "-" then
 					local s = toks.next()
 					if toks.peek() == "=" then
 						toks.next()
-						str = str .. "="..p..s.." "
+						str = str .. "="
+						for i=1, #v do
+							str = str.. v[ i ] .. "-(" .. parseExpr() .. ") "
+							if toks.peek() == "," then
+								toks.next()
+								str = str .. ", "
+							else
+								break
+							end
+						end
 					else
 						str = str..s
 					end
 				elseif toks.peek() == "*=" then
 					toks.next()
-					str = str .."=" .. p .. "*".." "
+					str = str .. "="
+					for i=1, #v do
+						str = str.. v[ i ] .. "*(" .. parseExpr() .. ") "
+						if toks.peek() == "," then
+							toks.next()
+							str = str .. ", "
+						else
+							break
+						end
+					end
 				elseif toks.peek() == "/=" then
 					toks.next()
-					str = str .. "=" .. p .. "/".." "
+					str = str .. "="
+					for i=1, #v do
+						str = str.. v[ i ] .. "/(" .. parseExpr() .. ") "
+						if toks.peek() == "," then
+							toks.next()
+							str = str .. ", "
+						else
+							break
+						end
+					end
 				elseif toks.peek() == "^=" then
 					toks.next()
-					str = str .."=" .. p .. "^".." "
+					str = str .. "="
+					for i=1, #v do
+						str = str.. v[ i ] .. "^(" .. parseExpr() .. ") "
+						if toks.peek() == "," then
+							toks.next()
+							str = str .. ", "
+						else
+							break
+						end
+					end
 				elseif toks.peek() == "%=" then
 					toks.next()
-					str = str .. "=" .. p .. "%".." "
+					str = str .. "="
+					for i=1, #v do
+						str = str.. v[ i ] .. "%(" .. parseExpr() .. ") "
+						if toks.peek() == "," then
+							toks.next()
+							str = str .. ", "
+						else
+							break
+						end
+					end
 				end
 			end
 		end
 		return str
 	end
-	local function parseWhileArgs()
+	function parseWhileArgs()
 		local str = ""
+		local c = 0
 		toks.next()
 		while toks.eof() == false do
 			local p = toks.next()
-			if p == ")" then
+			if p == "(" then c = c + 1 end
+			if p == ")" and c <= 0 then
 				break
+			elseif p == ")" then
+				c = c - 1
 			end
 			str = str .. p .. " "
 		end
@@ -401,31 +540,94 @@ local function parse( toks )
 			end )
 			str = str .. classstr
 		else
-			local v = toks.next()
-			str = str .. v .. " "
+			local v = {}
+			while toks.eof() == false do
+				v[ #v + 1 ] = toks.next()
+				if toks.peek() == "," then
+					toks.next()
+					str = str .. v[ #v ] .. ","
+				else
+					str = str .. v[ #v ] .. " "
+					break
+				end
+			end
 			if toks.peek() == "+=" then
 				toks.next()
-				str = str.. "="..v .. "+".." "
+				str = str .. "="
+				for i=1, #v do
+					str = str.. v[ i ] .. "+(" .. parseExpr() .. ") "
+					if toks.peek() == "," then
+						toks.next()
+						str = str .. ", "
+					else
+						break
+					end
+				end
 			elseif toks.peek() == "-" then
 				local s = toks.next()
 				if toks.peek() == "=" then
 					toks.next()
-					str = str .. "="..v..s.." "
+					str = str .. "="
+					for i=1, #v do
+						str = str.. v[ i ] .. "-(" .. parseExpr() .. ") "
+						if toks.peek() == "," then
+							toks.next()
+							str = str .. ", "
+						else
+							break
+						end
+					end
 				else
 					str = str..s
 				end
 			elseif toks.peek() == "*=" then
 				toks.next()
-				str = str .."=" .. v .. "*".." "
+				str = str .. "="
+				for i=1, #v do
+					str = str.. v[ i ] .. "*(" .. parseExpr() .. ") "
+					if toks.peek() == "," then
+						toks.next()
+						str = str .. ", "
+					else
+						break
+					end
+				end
 			elseif toks.peek() == "/=" then
 				toks.next()
-				str = str .. "=" .. v .. "/".." "
+				str = str .. "="
+				for i=1, #v do
+					str = str.. v[ i ] .. "/(" .. parseExpr() .. ") "
+					if toks.peek() == "," then
+						toks.next()
+						str = str .. ", "
+					else
+						break
+					end
+				end
 			elseif toks.peek() == "^=" then
 				toks.next()
-				str = str .."=" .. v .. "^".." "
+				str = str .. "="
+				for i=1, #v do
+					str = str.. v[ i ] .. "^(" .. parseExpr() .. ") "
+					if toks.peek() == "," then
+						toks.next()
+						str = str .. ", "
+					else
+						break
+					end
+				end
 			elseif toks.peek() == "%=" then
 				toks.next()
-				str = str .. "=" .. v .. "%".." "
+				str = str .. "="
+				for i=1, #v do
+					str = str.. v[ i ] .. "%(" .. parseExpr() .. ") "
+					if toks.peek() == "," then
+						toks.next()
+						str = str .. ", "
+					else
+						break
+					end
+				end
 			end
 		end
 	end

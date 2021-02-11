@@ -105,7 +105,7 @@ big
 
 print( createTestCase( "testcase-additional-support", false, function()
 	require "testcase-additional-support"
-end, 1, 2, 1, 4, 2, 4, 0, 1, 2, 1, 4, 2, 4, 0 ) )
+end, 1, 2, 1, 4, 2, 4, 0, 7, 42, 36, 51, 102, 6, 12, 1, 2, 1, 4, 2, 4, 0, 7, 42, 36, 51, 102, 6, 12 ) )
 
 print( createTestCase( "testcase-user-grump-additional-lua-support", false, function()
 	require "testcase-user-grump-additional-lua-support"
