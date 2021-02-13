@@ -14,7 +14,7 @@ local function split(inputstr, sep)
 end
 
 function class(base, init)
-	local c = {__version="Objective Lua v2.3"}
+	local c = {__version="Objective Lua v2.5"}
 	if not init and type(base) == 'function' then
 		init = base
 		base = nil
@@ -234,7 +234,14 @@ local function tokenizer( prog )
 			return last
 		end
 		if op( p ) then return dowhile( op ) end
-		if dots( p ) then return dowhile( dots ) end
+		if dots( p ) then
+			local dot = prog.next()
+			if nums( prog.peek() ) then
+				return dot..dowhile( num )
+			else
+				return dot..dowhile( dots )
+			end
+		end
 		return prog.next()
 	end
 	local curr
@@ -290,6 +297,22 @@ local function parse( toks )
 		end
 		return str
 	end
+	function parseWhileArgs()
+		local str = ""
+		local c = 0
+		toks.next()
+		while toks.eof() == false do
+			local p = toks.next()
+			if p == "(" then c = c + 1 end
+			if p == ")" and c <= 0 then
+				break
+			elseif p == ")" then
+				c = c - 1
+			end
+			str = str .. p .. " "
+		end
+		return str
+	end
 	local function parseExpr()
 		local expr = ""
 		while toks.eof() == false do
@@ -304,6 +327,9 @@ local function parse( toks )
 			end
 			if a1 == "{" then
 				a1 = a1 .. parseTable()
+			end
+			if a1 == "function" then
+				a1 = a1 .. "("..parseWhileArgs()..") "..parseWhileEnd().."end "
 			end
 			if toks.peek() == "." or toks.peek() == ":" then
 				a1 = a1 .. toks.next()
@@ -330,7 +356,7 @@ local function parse( toks )
 		return expr
 	end
 
-	local function parseWhileEnd()
+	function parseWhileEnd()
 		local str = ""
 		local ec = 0
 		local curr = 0
@@ -450,22 +476,6 @@ local function parse( toks )
 					end
 				end
 			end
-		end
-		return str
-	end
-	function parseWhileArgs()
-		local str = ""
-		local c = 0
-		toks.next()
-		while toks.eof() == false do
-			local p = toks.next()
-			if p == "(" then c = c + 1 end
-			if p == ")" and c <= 0 then
-				break
-			elseif p == ")" then
-				c = c - 1
-			end
-			str = str .. p .. " "
 		end
 		return str
 	end

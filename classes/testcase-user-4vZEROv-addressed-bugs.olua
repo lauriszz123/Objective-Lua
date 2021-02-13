@@ -1,0 +1,24 @@
+local x = 0
+
+x += (function() return 5 end)()
+
+out( x )
+
+x += .5
+
+out( x )
+
+class test_4vZEROv
+	function test_4vZEROv()
+		self.x = 0
+		self.x += (function() return 5 end)()
+
+		out( self.x )
+
+		self.x += .5
+
+		out( self.x )
+	end
+end
+
+new test_4vZEROv()
