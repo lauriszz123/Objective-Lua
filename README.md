@@ -162,6 +162,8 @@ a, b, c %= expression, expression, expression
 
 ## Release History
 
+* 2.5
+    * Bug Fixes.
 * 2.4
     * Added precedence support for self-evaluated expressions/variables.
 * 2.3
