@@ -127,6 +127,6 @@ end, 'alo\n123"', "alo\n123\"", '\97lo\10\04923"', [[alo
 
 print( createTestCase( "testcase-user-4vZEROv-addressed-bugs", false, function()
 	require "testcase-user-4vZEROv-addressed-bugs"
-end, 5, 5.5, 5, 5.5 ) )
+end, 5, 5.5, 10, 15, 20, 10, 5, 5.5, 10, 15, 20, 10 ) )
 
 love.event.quit()

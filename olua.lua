@@ -14,7 +14,7 @@ local function split(inputstr, sep)
 end
 
 function class(base, init)
-	local c = {__version="Objective Lua v2.5"}
+	local c = {__version="Objective Lua v2.6"}
 	if not init and type(base) == 'function' then
 		init = base
 		base = nil
@@ -388,6 +388,13 @@ local function parse( toks )
 				end
 				local v = {p}
 				while toks.eof() == false do
+					while toks.eof() == false do
+						if toks.peek() == "[" then
+							v[ #v ] = v[ #v ] .. "[" .. parseWhileTableArgs() .. "]"
+						else
+							break
+						end
+					end
 					if toks.peek() == "," then
 						toks.next()
 						str = str .. v[ #v ] .. ","
@@ -553,6 +560,13 @@ local function parse( toks )
 			local v = {}
 			while toks.eof() == false do
 				v[ #v + 1 ] = toks.next()
+				while toks.eof() == false do
+					if toks.peek() == "[" then
+						v[ #v ] = v[ #v ] .. "[" .. parseWhileTableArgs() .. "]"
+					else
+						break
+					end
+				end
 				if toks.peek() == "," then
 					toks.next()
 					str = str .. v[ #v ] .. ","
