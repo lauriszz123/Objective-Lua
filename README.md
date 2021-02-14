@@ -162,6 +162,8 @@ a, b, c %= expression, expression, expression
 
 ## Release History
 
+* 2.6
+    * Bug fixes.
 * 2.5
     * Bug Fixes.
 * 2.4
